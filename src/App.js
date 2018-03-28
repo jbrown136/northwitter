@@ -12,7 +12,8 @@ class App extends Component {
     timeline: [],
     tweetToSend: '',
     listToShow: [],
-    title: ''
+    title: '',
+    postMessage: ""
 }
 
 componentDidMount () {
@@ -27,12 +28,11 @@ componentDidMount () {
         <button className="sendTweet" onClick={this.sendTweet}>Send Tweet</button>
         <button className="showTrends" onClick={this.showTrends}>Show Trends</button>
         <button className="showTimeline" onClick={this.showTimeline}>Show Timeline</button>
-        <div className="output" id="output"></div>
+        <div className="output" id="output">{this.state.postMessage}</div>
         <p>{this.state.user}</p>
         <img src={this.state.profile_img} alt=""/>
         <Tweets user={this.state.user} />
         <ListMaker items={this.state.listToShow} title={this.state.title} />
-        {/* <ListMaker items={this.state.listToShow} title={this.state.title}/> */}
       </div>
     );
   }
@@ -66,7 +66,8 @@ componentDidMount () {
       user: '',
       profile_img: '',
       listToShow: trends,
-      title: 'Trending'
+      title: 'Trending',
+      postMessage: ''
     })
   }
 
@@ -76,7 +77,8 @@ componentDidMount () {
       user: '',
       profile_img: '',
       listToShow: timeline,
-      title: 'Timeline'
+      title: 'Timeline',
+      postMessage: ''
     })
   }
 
@@ -86,6 +88,10 @@ componentDidMount () {
     if(user === '') return this.setState({
       user: "",
       profile_img: "",
+      ussrname: "",
+      listToShow: "",
+      title: "",
+      postMessage: ""
     })
     if(event.key === "Enter") {
       event.target.value = ''
@@ -98,13 +104,18 @@ componentDidMount () {
         user: user,
         profile_img: user_img,
         listToShow: [],
-        title: ''
+        title: '',
+        postMessage: ''
     })
   })
     .catch(err => {
       this.setState({
-        user: "user does not exist",
+        user: `${user} does not exist`,
         profile_img: '',
+        username: '',
+        listToShow: [],
+        title: '',
+        postMessage: ''
       })
     })
   }
@@ -123,13 +134,16 @@ componentDidMount () {
     const output = document.getElementById("output")
     axios.post('https://northcoders-sprints-api.now.sh/api/twitter/tweets', tweet)
     .then(function (res) {
-      output.className = "output";
-      //output.innerHTML = res.data;
-      console.log(res.data)
+      this.setState({
+        postMessage: "tweet successfully sent"
+      })
+    //  console.log(res.data)
     })
     .catch(function(err) {
-      output.className = "container text-danger"
-      output.innerHTML = err.message
+      output.className = "error"
+      this.setState({
+        postMessage:err.message
+      })
     })
 
     this.setState({
@@ -172,21 +186,22 @@ class Tweets extends Component {
   }
 }
 
-class ListMaker extends Component {
-  render () {
+function ListMaker (props) {
   return (
     <div>
-      <h2>{this.props.title}</h2>
-    <ul>{this.props.items.map((item, i) => {
+      <h2>{props.title}</h2>
+    <ul>{props.items.map((item, i) => {
       return <List item={item} key={i}/>
     }
     )}</ul>
     </div>
   )
 }
-}
+
 
 function List (props) {
   return <li>{props.item}</li>
 }
+
+
 export default App;
