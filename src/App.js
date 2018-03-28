@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import axios from 'axios'
-
+import PropTypes from 'prop-types'
 
 class App extends Component {
   state = {
@@ -11,23 +11,28 @@ class App extends Component {
     trends: [],
     timeline: [],
     tweetToSend: '',
+    listToShow: [],
+    title: ''
 }
 
 componentDidMount () {
-  this.fetchTrends()
+  this.fetchTrends();
+  this.fetchTimeline();
 }
   render() {
     return (
       <div className="container">
         <input className="user" placeholder="Search users" onKeyUp={this.setUser}/>
-        <input className="writeTweet" placeholder="Send tweet" onChange={this.setTweet} />
+        <input className="writeTweet" placeholder="Send tweet" onChange={this.setTweet} maxLength="280https://github.com/jbrown136/northwitter" />
         <button className="sendTweet" onClick={this.sendTweet}>Send Tweet</button>
+        <button className="showTrends" onClick={this.showTrends}>Show Trends</button>
+        <button className="showTimeline" onClick={this.showTimeline}>Show Timeline</button>
         <div className="output" id="output"></div>
         <p>{this.state.user}</p>
         <img src={this.state.profile_img} alt=""/>
         <Tweets user={this.state.user} />
-        <p> Trending</p>
-        <ListMaker items={this.state.trends}/>
+        <ListMaker items={this.state.listToShow} title={this.state.title} />
+        {/* <ListMaker items={this.state.listToShow} title={this.state.title}/> */}
       </div>
     );
   }
@@ -44,6 +49,37 @@ componentDidMount () {
     .catch(err => console.log(err))
   }
 
+  fetchTimeline = () => {
+    axios.get("https://northcoders-sprints-api.now.sh/api/twitter/timeline")
+    .then(timeline => {
+      //console.log(timeline);
+      timeline = timeline.data.tweets.map(tweet=> tweet.text)
+      this.setState({
+        timeline: timeline
+      })
+    })
+  }
+
+  showTrends = event => {
+    const trends = this.state.trends
+    this.setState({
+      user: '',
+      profile_img: '',
+      listToShow: trends,
+      title: 'Trending'
+    })
+  }
+
+  showTimeline = events => {
+    const timeline = this.state.timeline;
+    this.setState({
+      user: '',
+      profile_img: '',
+      listToShow: timeline,
+      title: 'Timeline'
+    })
+  }
+
   setUser = event => {
     const user = event.target.value;
     //console.log(user)
@@ -52,6 +88,7 @@ componentDidMount () {
       profile_img: "",
     })
     if(event.key === "Enter") {
+      event.target.value = ''
     axios.get(`https://northcoders-sprints-api.now.sh/api/twitter/users/${user}`)
     .then(userData => {
       const user_img = userData.data.user.profile_image_url.replace("_normal", "")
@@ -59,7 +96,9 @@ componentDidMount () {
       this.setState({ 
         username: name,
         user: user,
-        profile_img: user_img
+        profile_img: user_img,
+        listToShow: [],
+        title: ''
     })
   })
     .catch(err => {
@@ -99,6 +138,10 @@ componentDidMount () {
   }
 }
 
+App.PropTypes = {
+  username: PropTypes.string,
+  user: PropTypes.string
+}
 class Tweets extends Component {
   state = {
     tweets: []
@@ -129,13 +172,18 @@ class Tweets extends Component {
   }
 }
 
-function ListMaker (props) {
+class ListMaker extends Component {
+  render () {
   return (
-    <ul>{props.items.map((item, i) => {
+    <div>
+      <h2>{this.props.title}</h2>
+    <ul>{this.props.items.map((item, i) => {
       return <List item={item} key={i}/>
     }
     )}</ul>
+    </div>
   )
+}
 }
 
 function List (props) {
