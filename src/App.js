@@ -133,16 +133,26 @@ componentDidMount () {
     const tweet = {status: this.state.tweetToSend}
     const output = document.getElementById("output")
     axios.post('https://northcoders-sprints-api.now.sh/api/twitter/tweets', tweet)
-    .then(function (res) {
+    .then(res => {
       this.setState({
-        postMessage: "tweet successfully sent"
+        postMessage: "tweet successfully sent",
+        user: '',
+        profile_img: '',
+        username: '',
+        listToShow: [],
+        title: '',
       })
     //  console.log(res.data)
     })
-    .catch(function(err) {
+    .catch(err => {
       output.className = "error"
       this.setState({
-        postMessage:err.message
+        postMessage: err.message,
+        user: '',
+        profile_img: '',
+        username: '',
+        listToShow: [],
+        title: '',
       })
     })
 
