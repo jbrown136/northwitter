@@ -1,0 +1,9 @@
+body {
+  justify-content: center;
+  align-content: center;
+}
+li {
+  list-style-type: none;
+  justify-content: center;
+  align-content: center;
+}
