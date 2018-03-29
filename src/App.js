@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import axios from 'axios'
 import PropTypes from 'prop-types'
+import Linkify from 'react-linkify'
 
 class App extends Component {
   state = {
@@ -48,7 +49,7 @@ componentDidMount () {
         <Tweets user={this.state.user.screen_name} />
         </div>
           <div id="trends">
-        <ListMaker items={this.state.trends} title="Trending" urls={this.state.trendsUrls}/>
+        <ListMaker items={this.state.trends} title="Trending" urls={this.state.trendsUrls} id="trends"/>
         </div>
         </div>
       </div>
@@ -165,7 +166,6 @@ class Tweets extends Component {
     })
      axios.get(`https://northcoders-sprints-api.now.sh/api/twitter/tweets/${user}`)
   .then(tweets => {
-    //console.log(tweets.data.tweets[0].user.profile_image_url)
     const tweetImages = []
     tweets = tweets.data.tweets.map(tweet => {
       tweetImages.push(tweet.user.profile_image_url)
@@ -211,9 +211,9 @@ else return (
 
 function List (props) {
   return (
-  <li>
-    <img src={props.image} alt="" className="tweetImage"/>
-    <a href={props.url} target="_blank">{props.item}</a>
+  <li className="box">
+    <img src={props.image} alt="" className="tweetImage"/><br/>
+    <a href={props.url} target="_blank"><Linkify properties={{target: "_blank", style: {color: 'black'}}}>{props.item}</Linkify></a>
     </li>
   )
 }
