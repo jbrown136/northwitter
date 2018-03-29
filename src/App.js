@@ -5,17 +5,13 @@ import PropTypes from 'prop-types'
 
 class App extends Component {
   state = {
-    username: '',
-    user: '',
+    user: {},
     profile_img : '',
     profileBanner: '', 
     trends: [],
     trendsUrls: [],
     timeline: [],
     tweetToSend: '',
-    // listToShow: [],
-    // title: '',
-    postMessage: ""
 }
 
 componentDidMount () {
@@ -27,10 +23,9 @@ componentDidMount () {
     return (
       <div className="container">
       <div className="header">
-        <input className="user" placeholder="Search users" onKeyUp={this.setUser}/>
-        <input className="writeTweet" placeholder="Send tweet" onChange={this.setTweet} maxLength="280https://github.com/jbrown136/northwitter" />
+        <input id="SearchUsers" placeholder="Search users" onKeyUp={this.setUser}/>
+        <input id="writeTweet" placeholder="Send tweet" onChange={this.setTweet} maxLength="280" />
         <button className="sendTweet" onClick={this.sendTweet}>Send Tweet</button>
-        {/* <button className="showTrends" onClick={this.showTrends}>Show Trends</button> */}
         <button className="showTimeline" onClick={this.showTimeline}>Show Timeline</button>
         </div>
         <div className="output" id="output">{this.state.postMessage}</div>
@@ -39,12 +34,18 @@ componentDidMount () {
         </div>
         <div id="data">
         <div id="user">
-        <h2>{this.state.user}</h2>
+        <h2>{this.state.user.screen_name}</h2>
+        <h3>{this.state.user.name}</h3>
         <img src={this.state.profile_img} alt=""/>
+        <h3>Followers: {this.state.user.followers_count}</h3>
+        <h3>Following: {this.state.user.friends_count}</h3>
+        {/* <h3>Tweets: {this.state.user.tweet_count}</h3>
+        <h3>Likes: {}</h3> */}
+        <h3>Lists: {this.state.user.listed_count}</h3>
         </div>
         <div id="tweets">
         <h2>Timeline</h2>
-        <Tweets user={this.state.user} />
+        <Tweets user={this.state.user.screen_name} />
         </div>
           <div id="trends">
         <ListMaker items={this.state.trends} title="Trending" urls={this.state.trendsUrls}/>
@@ -68,8 +69,8 @@ componentDidMount () {
         trends: trendsArr,
         trendsUrls: trendsUrls
     })
-    //.catch(err => console.log(err))
   })
+  .catch(err => console.log(err))
 }
 
   fetchTimeline = () => {
@@ -83,38 +84,15 @@ componentDidMount () {
     })
   }
 
-  // showTrends = event => {
-  //   const trends = this.state.trends
-  //   this.setState({
-  //     user: '',
-  //     profile_img: '',
-  //     listToShow: trends,
-  //     title: 'Trending',
-  //     postMessage: ''
-  //   })
-  // }
 
   showTimeline = events => {
     this.fetchUser("nc_students_say")
-    // const timeline = this.state.timeline;
-    // this.setState({
-    //   user: '',
-    //   profile_img: '',
-    //   listToShow: timeline,
-    //   title: 'Timeline',
-    //   postMessage: ''
-    // })
   }
 
   setUser = event => {
     const user = event.target.value;
     //console.log(user)
-    if(user === '') return this.setState({
-      user: "",
-      profile_img: "",
-      username: "",
-      postMessage: ""
-    })
+    if(user === '') return
     if(event.key === "Enter") {
      event.target.value = ''
      this.fetchUser(user)
@@ -126,25 +104,18 @@ componentDidMount () {
     .then(userData => {
       const user_img = userData.data.user.profile_image_url.replace("_normal", "");
       const name = userData.data.user.name;
-      const banner = userData.data.user.profile_banner_url ? userData.data.user.profile_banner_url : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAd4AAABpCAMAAACj+LKIAAAAw1BMVEX///88PDvDAC84ODc0NDMqKikwMC81NTQnJyaAgIAtLSz19fXY2NglJSSbm5u4uLfs7Oy/ABHBACGJiYlfX16ioqF1dXXdipf56u3b29uRkZHJycnbjJX02N0fHx3BACW+AADVanrl5eVpaWhDQ0K1tbVhYWBVVVTAABmrq6sAAADNzc3BwcFLS0q/AApJSUhvb2/GGDvjoKrptr7YeogSEg/x0NXSXnDKOFHOSl/78fPIKETVbn7qucHtw8njpa3PUGS4QFO5AAAOyklEQVR4nO2daXfiuBKG7XjFxkDYuoGOk2FzaCBhep3JzJ2e//+rLmBVaSsZkrgPt3P1ntMfYgtb0qOlVCW5HcfKysrKysrKysrKysrKysrKysrKysrKysrKyur/Ue/vQE+XzopV/frSvSrV/XDprFjVrqeHK9D9pfNiVbvedRFv99OlM2NVs56ur7huL50bq5oldN796Gy779vS0/2VpEvnx6pWfehKdO9/XDpDVnWKdd7bP25t9317+sQ6b9dheO8/XzpLVvWJQe2+w1H690tnyao2fWJj890TLpBs9307guXu3w73Tf516UxZ1aQfrPM+3Oz/eM+ck9f/XDpbVvXod9Z5/z3+9f2WGdGXzZRVTfrMOu/1t+OfN7b7vilB54XZ9g/bfd+QoPPe/4dd+IcZzw/fLpovq1r015W60mVXbv+8YK6s6hH0VcHNjJa07b6/vMDL3BWudSVT2urXFXTe7jvhIrig724uli+rWgSd90HcHgnR39vvF8uXVR36di34I7nAM/lgu+8vrT9vSY7gmbz97UL5sqpD3wDjv8oN5pm8unt/iWxZ1aM/77tH3alLoJu78sa1nX1/XT19ecek3frAbny5QLasrKysrKysrKys3pDS0XqzmTQ7l87HSaXT0Xo0Tc9J2hk1m9P//RKdqx+/lSJWP3DrO3VUP203vCwO9oqzuD8YUc8eN3T1Bpupkmw6JNJJKtMN2F9DtfYXcEN98kGjwSzZZzHe/wuK8aSiKvZFmpcps33KNZVk0lK12pBFd5ymllTUgGVuoqtJlQIKs2r0Xdd9nPVWzYqScL27vz3qmlj3Xpe3CLdVc5glkYvywuxxoT+7H/q6wiCfj6USNHMimaisTLdLyj9zFe84YDf0Iq/mWejxfPpB0jPU3nqXJb7HU8YhkbKVhYqSIIuXA+KZi1xNKv6qKBM18kDTvoUVLbLNHApzzKLn+UkWNsgWKAtPfd5p2+bgtMK1inc6ywW2rD4SXwPc99RUTGE+FEbKZmxIBkrKdEP20kzD65c3YhXvKkm0LPh5gxilm0WmFcnPtXFiEFL527fuvlbV7aSiRB7D2/Pp29QDJ5FSGD9+bOslkcUP9d6rFE14BzrcsnYLpTaMePdZC3j2fxbe6TYwvHuj1kIjJ7PqZ0qTpfHu5WWF0uFeg/eQIm/Iz2vlRKJ4e2KM5nhv1UMJBrwzutL2igK5yVXgdd0c6/gn4d3QyI5P6Em/78xN1NxsKKU04j3waElJX4l3P8QVUhkzw1vHTpXE72nIAV8ab/pYkSM3l0aLSrxuDs395+BdEa0dFcyElKO4Ip9yJVfg3T90KSZ9NV7XF149MZZGs0QkiV9ceJDPjJF4H6WB2YsiuWpy0TStxuvNfybehVwfniflJRFGvmlclVKq5Gq8ctLX43UDPh6IdqxU5Zk20RjxKsMwhXcp5MfP/P5ut3QzscyZYEQi3iAGBYIdG7CJrfk1QfFH8WtJ/ny8TYGul2ReUWyDGB8eCp03FXLkhnGwLQo3E42YcEfgDZmZm4Ricxf5It4w1pVtFbwhVoAvvBp75gImRC/2+rvlHNctvjx5VOO9lY70EnhbfN714zEbXaeDiLdU7JMC3nCEmrTm+Ahowp1FG7WA8m43/GL7+XiFVhhvF+UPRgO3fHck9rI+55OEbEHSafczXsvxSsMbrtgitT3YiW0h5KMC4A1XI0oyXn+1WB21WI0LbrmG0H2hJqNtad2km1l+/GlUTVfGe9UVQ/c63invE7J1MuATf8LneshUIL1xgWmJaSNl8L2+ntVn4G0gXi8UR6+2t7/hucLKaMVbWzYQUjYLPpDwfAJeaZZvz3nr5pMT4A2qPCmANxYvdnbwPOwrsfL3IVVvv5TLTy19ZbxX18IHU3S8S2xXuTLkj/gQx2ufxutsYLJL9HmjHry8GfpbZZE7zNxYmD9SnHg9T/FN9PBWhCMgiVdatHhw7Xl45Vz2oGmxok5ZjwhXYqrp8qu8AiCk4BX3NWt4+YSWaa2mgy3Yx3ca8DozGLQHjqp68EJK19tqT1l8FNGMoSKlLs3uYcdGI9+A19ngiJQAgdfgdeBpbKUJxqfaHwhPoSIVr/BBHA0v1lqw0h8ksIdLJryLRG0IqFrwdjArAbFqkC5ho8wJv+IOhnjMqAmvMOO47Mqr8EKJktLsALx+9SKXkIaXnxpT8eJA5hXUk7AjJLD4NeFdM4Z+Q31GPXjRvg1ONe8NdNBEH0j2mcEZHOZGI15nCGljhvNVeOHHSVmAEdR8cIabWRLi5c5J+NivihfrQh+aD0qhAUewkjDhnQDen9R7C/Ze0RKhheORT95eQecGRma8HSg9FKpOvFi1e4u2Ip5ECPB2P+AHQx9YcEHFC3khJjTpvhuyCya8K1he/Jy5N4WxOSTmEFlQbWGLvg+9BkZFM15urLM2hXirOpwJbyuU28YWDVc/K+joK613yPADflOyWwZ4VbzQKUx1scbezVqYCS886IWWs1Gs0tELVu2vc7hF6saGGoNXQnYq8GLp2VsBr7ccqprh20x4AWfGUrYEz5EXZm6jfeaOA8R7g6dR4JsLKl7oFMb2qM4QBrwDGPJeuO49hZe7A08VHqeb2JBgga4nlnUzXrRM1Fx4kSq+WjXgXSmv5QMSU5TsO/E5hAW8T4D36v64d0PBixOANjiCoM2BbUXj7cFzKAutDrzAINrpz5AF9Ki3HYUDQZBKjybwOjB+sjGpwuccnMDbQisGF9wLLaTghfnu9I4NAa9zc4fT7+EjGwpeHMky06alJYzebM4DvP4GtWoEOM4ERDC6DrwwFROGuSJsCCbPLR+9O9IPKLw45ZTm0LPwJk30Vm5aLv5SsGGpcG+U707tHxPxOp/QvDogrQ2vmwSEB560a2vFe9Kn0zqFt/MMvMtX4BWDLtxdHomV0I6JaJWfnBnOP+J1vsPy6BDbV/B2Tg7OfbmA58Z7RdWC9xQ01MlhnPfe04NzIU9Nz8NLSq7otJeHeoUS+8tEyXid32H+7f6mzb0wPFBlOwqzz8z5M3drSGWoce41zqgotJxMC+Qm2F7MfKjCix2xLP3r8WrxgnRV5IlaCX7l+KzgveGr38+fFMsZY52G5STv3qxfVuCNDGHos/AGmSx0GJWVvoGKNdnDqAkuZgx1BCt04F+BtwNWGCs9j/dmqj6egzeKqQXKdDXLYqkTm5appRS8zmf8v4y6cH4b8EIkwFvSj8ICgaVsxBtlM8MAfw7eYNSRlPZkt8ZIWaKYhc5pYgUuFTmCrdZmvG2lUaHjaZNqwh8Z8Ua5qYb2Q8qgEHdQVDZiFa/zN99bdyXjbSlhKlXoCwQ0JrzR0OjJqcUpCdBO21ZQu9GMvI1rQYgDVeCdKaV/llNSq6FdtXO5M/Bw7K9sxBpe/FAOCvA20a1KrjjwNvoaueVcCjIUmj39teDdwSiuOoM0YfVm9DELuA3xJDNeDJhB6Z+HN5Rr6IzQQQuj5lVxEx3v+3sDXjSdaHMN/aLojFLXvfj7zOgXrwUvjpMnV77ryiDYVHPAmPFi6aFsz8LrrxYHtblr+fSBqJbZc8+l43X+uTPg5fsEPf3tuMOAD3Sq12qN1WUIStSEN8U4PGXAjUU02OISIpSKyLCDGPE2tNK/aDPOBAdIdamWaqs83MJRZVsReJ139zReDLC43qPKF8cKN8Oia05JrITElKV6dmtg6FnIDD4lFjfjrLiHSFsP8F2hGC404W3wjR1w52UBQQwbZ4pLrwjmyvzRIXfoKKLw8uCCgheDAa4XybPDEMsnWCm6z5nv1TLYA/Xg5fFRtZpGc9/1EoGvy1MqRxcKpMt3BdB4R3zbHd+Y+sJ4L99BIJVyGB4OJEh9ipvmFS8g8T4Z8DqP3BbOhOOWK59bgEIYSMe7BgPEFGmvaack3//oZjuez2l5lkjkK2z/D+e8otIBP7ogzMuIl/ekdDMTNs0GSOCF8V6soUhcfpYbkMOkxYs+wnVMVYCfxIvfMlPxjgTHdpRtW+11c7IaBoKDRuwtRMQIZ+iQXrTUhNcpuHMnyvqr9XQ6muyXi7AhIeBV0uBLSC+IepvRdNpcDEUHr9CP0CE2Y0eKd/M4EPxIgqMJ8EbDMaFeyZOIGGF+hA1tbTTLs/5gPU3T6aShbe4iReMVggvyKYW2GLjwwkOsQNqnH4gWChUQdNG+pnf01IRXOnvghYdDs+IBCU/YOVeI+feTOMtiyfMnnqtB4xKDuK6oXJgG0XyPqCPLX8syUAFBzCXmUTpyER59djzwQO4SQxnw8uCCcjRlUHUyyw0k+47Cy7NKbrCvC68zok/UQZ2Ip1Dmlb7sXFxWVp8xEulWnzGCMlB4+QQGk8K4qs7pXWIgE1743zNUvJUn7xTrhAzno1VLHo+pDa8z0k9uo2Lp1WlRAU0+81iF15NXYS/GyycwXF+09bPlmL9qB4gR780DjddZhyZPWq74T+jdGnN0ABAmX314nc6jiUWuLsuGpq7u+7KFX4E3KGQT5+V4hQkMLLiOeOZJKsqJ3YJGvDy4oJ7OT4fU8XwvW6rVTuPlw3OiO0dqxHsY1KhGn7h6g9+EFDfthLwRrxd4qmvwFXibxPpi80icQvZPHP+swovBBe3bGs5opkaW/azQ13eGrXRjNDp0R36teA/5VEYaL8loj0orUwdzP19qi3MKr+cneaHvK3oFXj6BieuLTT+XrFgv1L/9oenL3fVR1P+Z8Nfx3gP1Qedpa5sHoR95exMyTDJ3TLnki5zFN5XrjzkEPjWrL/1Y3skJt+UMHqcWqvdVjaPyfI7dwwdvjqvdaG90FubBbLHM9quAMqV/KBKxnmx9VQ/q5sm2saBqeaEmlcTKAF/G+aqMY/OY7V76KHaazmoWZkFSfpAn37bO2NH+9J6JuJeabx1ethk0dv3+rtHSvlQFKUDqczumO+bfVN1Kzb9xDt+C6s0ew3DeH7Y21a09nbSGhRtG21lvQRep01Rk/sKZllRWZUbEPCl/TyeLwbg1WKzfzqfVrKysrKysrKysrKysrKysrKysrKysrKysrKysztZ/Aa/6QFKOpP57AAAAAElFTkSuQmCC";
+      const banner = userData.data.user.profile_banner_url ? userData.data.user.profile_banner_url : "data:image/png;base64,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";
       this.setState({ 
         username: name,
-        user: user,
+        user: userData.data.user,
         profile_img: user_img,
         profileBanner: banner
-        // listToShow: [],
-        // title: '',
-        //postMessage: ''
     })
   })
     .catch(err => {
       this.setState({
-        user: `${user} does not exist`,
-        profile_img: '',
-        username: '',
-        listToShow: [],
-        title: '',
-        postMessage: ''
+        profile_img: "",
+        user: {Screen_name: "User does not exist"}
       })
     })
   }
@@ -156,20 +127,18 @@ componentDidMount () {
   }
 
   sendTweet = () => {
-    //console.log(this.state.tweetToSend)
     if (this.state.tweetToSend === '') return;
     const tweet = {status: this.state.tweetToSend}
-    const output = document.getElementById("output")
     axios.post('https://northcoders-sprints-api.now.sh/api/twitter/tweets', tweet)
     .then(res => {
       this.fetchUser("nc_students_say")
-    //  console.log(res.data)
     })
     .catch(err => console.log(err))
 
     this.setState({
       tweetToSend: ''
     })
+    document.getElementById("writeTweet").value = ""
   }
 }
 
@@ -179,24 +148,32 @@ App.PropTypes = {
 }
 class Tweets extends Component {
   state = {
-    tweets: []
+    tweets: [],
+    tweetImages: []
   }
   componentWillReceiveProps (nextProps) {
     this.fetchTweets(nextProps.user)
   }
   render () {
-    return <ListMaker items={this.state.tweets} />
+    return <ListMaker items={this.state.tweets} images={this.state.tweetImages}/>
   }
 
   fetchTweets = (user) => {
     if(user === "") return this.setState({
-      tweets: []
+      tweets: [],
+      tweetImages: []
     })
      axios.get(`https://northcoders-sprints-api.now.sh/api/twitter/tweets/${user}`)
   .then(tweets => {
-    tweets = tweets.data.tweets.map(tweet => tweet.text)
+    //console.log(tweets.data.tweets[0].user.profile_image_url)
+    const tweetImages = []
+    tweets = tweets.data.tweets.map(tweet => {
+      tweetImages.push(tweet.user.profile_image_url)
+      return tweet.text
+    })
     this.setState({
-      tweets: tweets.reverse()
+      tweets: tweets.reverse(),
+      tweetImages: tweetImages
     })
     })
     .catch(err => {
@@ -208,12 +185,13 @@ class Tweets extends Component {
 }
 
 function ListMaker (props) {
-  if (props.title === 'Trending'){
+  //console.log(props.images)
+  if (props.images){
   return (
     <div>
       <h2>{props.title}</h2>
     <ul>{props.items.map((item, i) => {
-      return <List item={item} key={i} url={props.urls[i]}/>
+      return <List item={item} key={i}  image={props.images[i]}/>
     }
     )}</ul>
     </div>
@@ -223,7 +201,7 @@ else return (
   <div>
       <h2>{props.title}</h2>
     <ul>{props.items.map((item, i) => {
-      return <List item={item} key={i} />
+      return <List item={item} key={i} url={props.urls[i]}/>
     }
     )}</ul>
     </div>
@@ -232,7 +210,12 @@ else return (
 
 
 function List (props) {
-  return <li><a href={props.url} target="_blank">{props.item}</a></li>
+  return (
+  <li>
+    <img src={props.image} alt="" className="tweetImage"/>
+    <a href={props.url} target="_blank">{props.item}</a>
+    </li>
+  )
 }
 
 
