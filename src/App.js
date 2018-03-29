@@ -9,6 +9,7 @@ class App extends Component {
     user: '',
     profile_img : '', 
     trends: [],
+    trendsUrls: [],
     timeline: [],
     tweetToSend: '',
     listToShow: [],
@@ -29,10 +30,14 @@ componentDidMount () {
         <button className="showTrends" onClick={this.showTrends}>Show Trends</button>
         <button className="showTimeline" onClick={this.showTimeline}>Show Timeline</button>
         <div className="output" id="output">{this.state.postMessage}</div>
+        <div id="user">
         <p>{this.state.user}</p>
         <img src={this.state.profile_img} alt=""/>
         <Tweets user={this.state.user} />
-        <ListMaker items={this.state.listToShow} title={this.state.title} />
+        </div>
+          <div id="timeline">
+        <ListMaker items={this.state.listToShow} title={this.state.title} urls={this.state.trendsUrls}/>
+        </div>
       </div>
     );
   }
@@ -41,13 +46,19 @@ componentDidMount () {
     axios.get("https://northcoders-sprints-api.now.sh/api/twitter/trends")
     .then(trends => {
       //console.log(trends)
-      const trendsArr = trends.data.trends.map(trend => trend.name)
-      this.setState({
-        trends: trendsArr
+      const trendsArr = []
+      const trendsUrls = []
+      trends.data.trends.forEach(trend => { 
+        trendsArr.push(trend.name)
+        trendsUrls.push(trend.url)
       })
+      this.setState({
+        trends: trendsArr,
+        trendsUrls: trendsUrls
     })
-    .catch(err => console.log(err))
-  }
+    //.catch(err => console.log(err))
+  })
+}
 
   fetchTimeline = () => {
     axios.get("https://northcoders-sprints-api.now.sh/api/twitter/timeline")
@@ -197,20 +208,31 @@ class Tweets extends Component {
 }
 
 function ListMaker (props) {
+  if (props.title === 'Trending'){
   return (
     <div>
       <h2>{props.title}</h2>
     <ul>{props.items.map((item, i) => {
-      return <List item={item} key={i}/>
+      return <List item={item} key={i} url={props.urls[i]}/>
     }
     )}</ul>
     </div>
   )
 }
+else return (
+  <div>
+      <h2>{props.title}</h2>
+    <ul>{props.items.map((item, i) => {
+      return <List item={item} key={i} />
+    }
+    )}</ul>
+    </div>
+)
+}
 
 
 function List (props) {
-  return <li>{props.item}</li>
+  return <li><a href={props.url}>{props.item}</a></li>
 }
 
 
